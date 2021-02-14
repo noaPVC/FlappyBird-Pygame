@@ -1,5 +1,5 @@
 # FlappyBird-Pygame
-making flappy bird in pygame
+flappy bird in pygame
 
 
 ## Use:
