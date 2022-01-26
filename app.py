@@ -11,17 +11,12 @@ from constants import *
 import const_btns
 from bird_vars import *
 
-
-pygame.init()
-mixer.init()
-pygame.font.init()
-
 dir_current = path.dirname(__file__)
-FPS = 120
-
+FPS = 60
+WIDTH, HEIGHT = 577, 780
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('FlappyBird')
-icon = constants.frame_icon
+pygame.display.set_caption("FlappyBird")
+icon = constants.frame_icon.convert_alpha()
 pygame.display.set_icon(icon)
 
 home_screen = True
@@ -38,8 +33,10 @@ gravitation = 0.25
 bird_move = 0
 score = 0
 
-currentBG = constants.BG_DAY
-currentPipe = constants.GREEN_PIPE
+# global vars used in game
+
+currentBG = constants.BG_NIGHT.convert_alpha()
+currentPipe = constants.GREEN_PIPE.convert_alpha()
 
 # loading our data here as alike currency or scores
 
@@ -47,7 +44,7 @@ currentPipe = constants.GREEN_PIPE
 def load_data():
     global highscore
     # load highscore
-    with open(path.join(dir_current, 'saved.txt'), 'r') as f:
+    with open(path.join(dir_current, "saved.txt"), "r") as f:
         highscore = int(f.read())
 
 
@@ -55,7 +52,6 @@ load_data()
 
 
 clock = pygame.time.Clock()
-
 x_pos_floor = 0
 
 ANIMATEBIRD = pygame.USEREVENT + 1
@@ -63,35 +59,29 @@ pygame.time.set_timer(ANIMATEBIRD, 200)
 
 list_of_pipes = []
 SPAWNPIPE = pygame.USEREVENT
-pygame.time.set_timer(SPAWNPIPE, 1200)
+pygame.time.set_timer(SPAWNPIPE, 1600)
 
 
 # FUNCTIONS
-
-
 def draw_bg():
     WIN.blit(currentBG, (0, 0))
-
 
 def draw_floor():
     global x_pos_floor
     x_pos_floor -= 1
-    WIN.blit(constants.base_img, (x_pos_floor, 700))
-    WIN.blit(constants.base_img, (x_pos_floor+WIDTH, 700))
+    WIN.blit(constants.base_img.convert_alpha(), (x_pos_floor, 700))
+    WIN.blit(constants.base_img.convert_alpha(), (x_pos_floor + WIDTH, 700))
     if x_pos_floor <= -WIDTH:
         x_pos_floor = 0
 
 
 pipe_heights = [370, 400, 300, 500]
 
-
 def create_pipes():
     rand_pipe_pos = random.choice(pipe_heights)
 
-    new_bottom_pipe = currentPipe.get_rect(
-        midtop=(650, rand_pipe_pos))
-    new_top_pipe = currentPipe.get_rect(
-        midbottom=(650, rand_pipe_pos-250))
+    new_bottom_pipe = currentPipe.get_rect(midtop=(650, rand_pipe_pos))
+    new_top_pipe = currentPipe.get_rect(midbottom=(650, rand_pipe_pos - 250))
     return new_bottom_pipe, new_top_pipe
 
 
@@ -123,12 +113,12 @@ def remove_pipes_crossed():
 def display_score_update_highscore():
     global highscore
 
-    score_label = main_game_font.render(f'{score}', 1, WHITE)
-    WIN.blit(score_label, (WIDTH/2-50, 50))
+    score_label = main_game_font.render(f"{score}", 1, WHITE)
+    WIN.blit(score_label, (WIDTH / 2 - 50, 50))
 
     if score >= highscore:
         highscore = score
-        with open(path.join(dir_current, 'saved.txt'), 'w') as f:
+        with open(path.join(dir_current, "saved.txt"), "w") as f:
             f.write(str(score))
 
 
@@ -144,14 +134,14 @@ def check_collide(pipes):
         if bird_rect.colliderect(pipe):
             return False
 
-    if bird_rect.top <= -100 or bird_rect.bottom >= HEIGHT-100:
+    if bird_rect.top <= -100 or bird_rect.bottom >= HEIGHT - 100:
         return False
 
     return True
 
 
 def rotate_bird(bird_surface):
-    new_bird = pygame.transform.rotate(bird_surface, -bird_move*3)
+    new_bird = pygame.transform.rotate(bird_surface, -bird_move * 3)
     return new_bird
 
 
@@ -177,17 +167,17 @@ def draw_gameover_screen():
     draw_bg()
     draw_floor()
 
-    WIN.blit(constants.gameover_img, (WIDTH/2-195, 70))
+    WIN.blit(constants.gameover_img.convert_alpha(), (WIDTH / 2 - 195, 70))
 
     info_restart_label = info_font.render(
-        'Or just press the spacebar to restart the game.', 1, WHITE)
+        "Or just press the spacebar to restart the game.", 1, WHITE
+    )
 
-    score_label = regular_font.render(f'Score:  {score}', 1, WHITE)
-    highscore_label = regular_font.render(
-        f'Highscore:  {highscore}', 1, WHITE)
+    score_label = regular_font.render(f"Score:  {score}", 1, WHITE)
+    highscore_label = regular_font.render(f"Highscore:  {highscore}", 1, WHITE)
 
     # BTNS returning a specific state each we can detect what scene we display
-    if mouseOver(WIDTH/2-130, 200, BTN_SIZE, BTN_SIZE):
+    if mouseOver(WIDTH / 2 - 130, 200, BTN_SIZE, BTN_SIZE):
         currentRestart = const_btns.restart_hover
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -198,7 +188,7 @@ def draw_gameover_screen():
     else:
         currentRestart = const_btns.restart
 
-    if mouseOver(WIDTH/2+20, 200, BTN_SIZE, BTN_SIZE):
+    if mouseOver(WIDTH / 2 + 20, 200, BTN_SIZE, BTN_SIZE):
         currentHome = const_btns.home_hover
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -206,11 +196,11 @@ def draw_gameover_screen():
     else:
         currentHome = const_btns.home
 
-    WIN.blit(currentRestart, (WIDTH/2-130, 200))
-    WIN.blit(currentHome, (WIDTH/2+20, 200))
-    WIN.blit(info_restart_label, (16, HEIGHT-120))
-    WIN.blit(score_label, (WIDTH/2-70, 360))
-    WIN.blit(highscore_label, (WIDTH/2-105, 410))
+    WIN.blit(currentRestart, (WIDTH / 2 - 130, 200))
+    WIN.blit(currentHome, (WIDTH / 2 + 20, 200))
+    WIN.blit(info_restart_label, (16, HEIGHT - 120))
+    WIN.blit(score_label, (WIDTH / 2 - 70, 360))
+    WIN.blit(highscore_label, (WIDTH / 2 - 105, 410))
 
 
 def draw_home_screen():
@@ -232,9 +222,14 @@ def draw_home_screen():
 
     if not settings and not help_screen:
         draw_bg()
-        mouseOver(WIDTH/2-90, 250, 150, 150)
+        mouseOver(WIDTH / 2 - 90, 250, 150, 150)
 
-        if mx >= WIDTH/2-90 and mx <= WIDTH/2-90 + 150 and my >= 250 and my <= 250 + 150:
+        if (
+            mx >= WIDTH / 2 - 90
+            and mx <= WIDTH / 2 - 90 + 150
+            and my >= 250
+            and my <= 250 + 150
+        ):
             currentPlay = const_btns.play_hover
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -243,7 +238,7 @@ def draw_home_screen():
             currentPlay = const_btns.play
 
         # SETTINGS BTN
-        if mouseOver(10, HEIGHT-70, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
+        if mouseOver(10, HEIGHT - 70, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
             currentSettings = const_btns.settings_hover
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -252,7 +247,7 @@ def draw_home_screen():
             currentSettings = const_btns.settings
 
         # HELP INFO
-        if mouseOver(10, HEIGHT-140, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
+        if mouseOver(10, HEIGHT - 140, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
             currentHelp = const_btns.help_btn_hover
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -261,7 +256,7 @@ def draw_home_screen():
             currentHelp = const_btns.help_btn
 
         # EXIT GAME
-        if mouseOver(WIDTH-70, HEIGHT-70, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
+        if mouseOver(WIDTH - 70, HEIGHT - 70, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
             currentExit = const_btns.exit_game_hover
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -270,21 +265,21 @@ def draw_home_screen():
         else:
             currentExit = const_btns.exit_game
 
-        highscore_label = regular_font.render('Highscore', 1, WHITE)
+        highscore_label = regular_font.render("Highscore", 1, WHITE)
         highscore_int_label = big_font.render(str(highscore), 1, WHITE)
 
         if highscore > 0:
-            WIN.blit(highscore_label, (WIDTH/2-100, 620))
+            WIN.blit(highscore_label, (WIDTH / 2 - 100, 620))
             if highscore > 9:  # just for designing purposes
-                WIN.blit(highscore_int_label, (WIDTH/2-50, 665))
+                WIN.blit(highscore_int_label, (WIDTH / 2 - 50, 665))
             else:
-                WIN.blit(highscore_int_label, (WIDTH/2-30, 665))
+                WIN.blit(highscore_int_label, (WIDTH / 2 - 30, 665))
 
-        WIN.blit(currentExit, (WIDTH-70, HEIGHT-70))
-        WIN.blit(currentHelp, (10, HEIGHT-140))
-        WIN.blit(currentSettings, (10, HEIGHT-70))
-        WIN.blit(constants.title_img, (WIDTH/2-195, 70))
-        WIN.blit(currentPlay, (WIDTH/2-90, 250))
+        WIN.blit(currentExit, (WIDTH - 70, HEIGHT - 70))
+        WIN.blit(currentHelp, (10, HEIGHT - 140))
+        WIN.blit(currentSettings, (10, HEIGHT - 70))
+        WIN.blit(constants.title_img, (WIDTH / 2 - 195, 70))
+        WIN.blit(currentPlay, (WIDTH / 2 - 90, 250))
 
     elif settings:
         draw_bg()
@@ -297,9 +292,9 @@ def draw_home_screen():
         else:
             currentBack = const_btns.back
 
-        settings_title = settings_title_font.render('Settings', 1, WHITE)
-        music_label = settings_font.render('MUSIC', 1, WHITE)
-        sfx_label = settings_font.render('SFX', 1, WHITE)
+        settings_title = settings_title_font.render("Settings", 1, WHITE)
+        music_label = settings_font.render("MUSIC", 1, WHITE)
+        sfx_label = settings_font.render("SFX", 1, WHITE)
 
         if mouseOver(300, 395, BTN_SMALL_SIZE, BTN_SMALL_SIZE):
             for event in pygame.event.get():
@@ -340,8 +335,8 @@ def draw_home_screen():
             currentReset = const_btns.reset_hover
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    with open(path.join(dir_current, 'saved.txt'), 'w') as f:
-                        f.write('0')
+                    with open(path.join(dir_current, "saved.txt"), "w") as f:
+                        f.write("0")
                         highscore = 0
         else:
             currentReset = const_btns.reset
@@ -366,12 +361,12 @@ def draw_home_screen():
         else:
             currentBack = const_btns.back
 
-        WIN.blit(constants.help_title, (105, 10))
-        WIN.blit(constants.tap_img, (40, 170))
-        WIN.blit(constants.txt1, (180, 200))
-        WIN.blit(constants.collision_sign, (20, 560))
-        WIN.blit(constants.txt2, (180, 550))
-        WIN.blit(currentBack, (10, 10))
+        WIN.blit(constants.help_title.convert_alpha(), (105, 10))
+        WIN.blit(constants.tap_img.convert_alpha(), (40, 170))
+        WIN.blit(constants.txt1.convert_alpha(), (180, 200))
+        WIN.blit(constants.collision_sign.convert_alpha(), (20, 560))
+        WIN.blit(constants.txt2.convert_alpha(), (180, 550))
+        WIN.blit(currentBack.convert_alpha(), (10, 10))
 
 
 def play_audio(sfx, theme):
@@ -392,7 +387,7 @@ def play_audio(sfx, theme):
             pass
 
     if music:
-        if theme == 'theme':
+        if theme == "theme":
             mixer.music.set_volume(0.3)
             mixer.music.play(-1)
         elif theme == None:
@@ -401,11 +396,11 @@ def play_audio(sfx, theme):
 
 def set_bird(color):
 
-    if color == 'red':
+    if color == "red":
         return red_bird_frames
-    elif color == 'blue':
+    elif color == "blue":
         return blue_bird_frames
-    elif color == 'yellow':
+    elif color == "yellow":
         return yellow_bird_frames
     else:
         return bird_animate_frames
@@ -417,10 +412,8 @@ def mouseOver(x, y, width, height):
     else:
         return False
 
-#
 
-
-play_audio(None, 'theme')
+play_audio(None, "theme")
 
 # game
 while True:

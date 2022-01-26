@@ -15,7 +15,6 @@ BTN_SMALL_SIZE = 60
 
 frame_icon = pygame.image.load(
     os.path.join('vis/assets/icon', 'frame_icon.png'))
-
 # imgs
 BG_DAY = pygame.transform.scale(pygame.image.load(
     os.path.join('vis/assets/bgs', 'background-day.png')), (WIDTH, HEIGHT))
